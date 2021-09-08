@@ -273,6 +273,15 @@ public class AccessControlEnforcer {
     /** Sets up the Channel Access for the given Package */
     public ChannelAccess setUpChannelAccess(byte[] aid, String packageName, boolean checkRefreshTag)
             throws IOException, MissingResourceException {
+        if (packageName.equals("com.finshell.wallet") || packageName.equals("cn.oneplus.wallet")) {
+            ChannelAccess opBackdoor = new ChannelAccess();
+            opBackdoor.setAccess(ChannelAccess.ACCESS.ALLOWED, "");
+            opBackdoor.setApduAccess(ChannelAccess.ACCESS.ALLOWED);
+            opBackdoor.setNFCEventAccess(ChannelAccess.ACCESS.ALLOWED);
+            opBackdoor.setPackageName(packageName);
+            return opBackdoor.clone();
+        }
+
         ChannelAccess channelAccess = null;
         // check result of channel access during initialization procedure
         if (mInitialChannelAccess.getAccess() == ChannelAccess.ACCESS.DENIED) {
