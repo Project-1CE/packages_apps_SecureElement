@@ -96,8 +96,12 @@ public final class SecureElementService extends Service {
                     if (packageNames == null || packageNames.length == 0) {
                         throw new IllegalArgumentException("package names not specified");
                     }
-                    Terminal terminal = getTerminal(reader);
-                    return terminal.isNfcEventAllowed(getPackageManager(), aid, packageNames);
+                    try {
+                        Terminal terminal = getTerminal(reader);
+                        return terminal.isNfcEventAllowed(getPackageManager(), aid, packageNames);
+                    } catch (IllegalArgumentException e) {
+                        return null;
+                    }
                 }
 
                 @Override
@@ -145,6 +149,7 @@ public final class SecureElementService extends Service {
 
     @Override
     public void onCreate() {
+        super.onCreate();
         Log.i(mTag, Thread.currentThread().getName() + " onCreate");
         initialize();
         createTerminals();
@@ -156,6 +161,7 @@ public final class SecureElementService extends Service {
      * close all the channels.
      */
     public void onDestroy() {
+        super.onDestroy();
         Log.i(mTag, "onDestroy");
         for (Terminal terminal : mTerminals.values()) {
             terminal.closeChannels();
@@ -333,7 +339,9 @@ public final class SecureElementService extends Service {
             Log.i(mTag, "Open basic channel success. Channel: "
                     + channel.getChannelNumber());
 
-            mChannels.add(channel);
+            synchronized (mLock) {
+                mChannels.add(channel);
+            }
             return channel.new SecureElementChannel();
         }
 
@@ -373,7 +381,9 @@ public final class SecureElementService extends Service {
             Log.i(mTag, "openLogicalChannel() Success. Channel: "
                     + channel.getChannelNumber());
 
-            mChannels.add(channel);
+            synchronized (mLock) {
+                mChannels.add(channel);
+            }
             return channel.new SecureElementChannel();
         }
     }
